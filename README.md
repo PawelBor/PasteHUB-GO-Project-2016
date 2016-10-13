@@ -1,2 +1,2 @@
-# WebAppGo
-Web app Example
+# PastehHub
+Year 4 Project - Emerging Technologies
