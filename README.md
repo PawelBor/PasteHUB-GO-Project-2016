@@ -27,3 +27,19 @@ A key will be used to identify which user is currently able to type into the doc
 FRONT-END| HTML, CSS, JavaScript, Bootstrap
 SERVER| GO-Lang + Macaron Framework
 DATABASE| CouchDB
+
+
+####**Design of the application**
+*  The application will use the DB for storing user login details.
+*  Ability to save to DB and store the data there and then read off it (Too many requests to keep it being updated constantly). 
+*  User can type and if stopped typing, the data will be sent to DB after short interval and saved + read. If the user will type for too long, other members in room/session will see blank screen until the editor stops typing.
+*  Text stored in String format on the server-side and display it back to the front-end(user). 
+*  Possiblility of storing the document on the database or saving it locally.
+
+
+
+####**Functionality of the application**
+*  Register/Login functionality
+*  Be able to export documents after finished typing to some format.
+*  Pass around some type of key between users to determine who is the editor. 
+*  Have guest accounts be able to only watch the room/session.
