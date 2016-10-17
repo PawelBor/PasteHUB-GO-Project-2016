@@ -43,3 +43,4 @@ DATABASE| CouchDB
 *  Be able to export documents after finished typing to some format.
 *  Pass around some type of key between users to determine who is the editor. 
 *  Have guest accounts be able to only watch the room/session.
+*  Import .txt files for editing online.
