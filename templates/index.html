@@ -52,18 +52,13 @@
     
     <script>
       // Websocket code adapted from github.com/gorilla/websocket/examples/chat
+      var conn;
+      var msg;
+      var doc;
       window.onload = function () {
-        var conn;
-        var msg = document.getElementById("document").value;
-        var doc = document.getElementById("document");
+        msg = document.getElementById("document").value;
+        doc = document.getElementById("document");
 
-        function appendDoc(item) {
-            var doScroll = doc.scrollTop === doc.scrollHeight - doc.clientHeight;
-            doc.appendChild(item);
-            if (doScroll) {
-                doc.scrollTop = doc.scrollHeight - doc.clientHeight;
-            }
-        }
         if (window["WebSocket"]) {
             conn = new WebSocket("ws://{{$}}/ws");
             conn.onclose = function (evt) {
@@ -75,7 +70,7 @@
                   doc.scrollTop = doc.scrollHeight - doc.clientHeight;
               }
             }
-            } else {
+        } else {
             window.alert("Your browser does not support WebSockets.");
         }
       };
@@ -96,7 +91,7 @@
             if (!msg.value) {
                 return false;
             }
-            conn.send(document.getElementById("document").value);
+            conn.send(msg);
             return false;
             console.log("keydown in doc");
           }, 300);
