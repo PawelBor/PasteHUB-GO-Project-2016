@@ -1,6 +1,7 @@
 body {
   background: rgb(204,204,204); 
 }
+
 page {
   background: white;
   display: block;
@@ -9,18 +10,90 @@ page {
   margin-bottom: 0.5cm;
   box-shadow: 0 0 0.5cm rgba(0,0,0,0.5);
 }
+
 page[size="A4"] {  
   width: 21cm;
   height: 29.7cm; 
 }
+
 textarea {
   resize: none;
   outline-width: 0;
   border-width: 0;
 }
+
 #document {
   width: 80%;
   height: 85%;
   margin-left: 10%;
   margin-top: 10%;
+}
+
+.mce-doc{
+  width: 815px;
+  margin: 0 auto;
+  margin-top:1%;
+  margin-bottom: 3.5%;
+  border:2px solid #0391DB;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+  opacity: 0.7;
+}
+
+.client_pad{
+  position: fixed;
+  z-index: 999;
+  right:6vh;
+  top:6vh;
+  width:28vh;
+  height: 40vh;
+  background: rgba(255,255,255,0.7);
+  border:2px solid #0391DB;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+}
+
+#editor_body{
+  background: url(../images/background_books.jpg) no-repeat center center fixed; 
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
+  width: 100%;
+}
+
+.footer{
+  position: fixed;
+  color: black;
+  bottom: 0px;
+  right:40px;
+  font-size: 15px;
+  width: 50px;
+  background: white;
+  text-align: center;
+  padding:5px;
+}
+
+#release_btn {
+  background-color: #0391DB;
+  border: 1px solid ;
+  color: white;
+  padding: 2vh 2vh;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size:1.7vh;
+  -webkit-transition-duration: 0.4s; 
+  transition-duration: 0.4s;
+  opacity: 1;
+  width: 27.7vh;
+  margin:0 auto;
+  position: fixed;
+  bottom:0px;
+  margin-left:42%;
+  z-index: 1000;
+}
+
+#release_btn:hover {
+  background-color: white;
+  color: #0391DB;
+  cursor: pointer;
 }
