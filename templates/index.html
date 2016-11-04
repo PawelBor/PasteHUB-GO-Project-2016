@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <!-- Required meta tags always come first -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.4/css/bootstrap.min.css">
+
+    <!-- jQuery first, then Tether, then Bootstrap JS. -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.0.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.2.0/js/tether.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.4/js/bootstrap.min.js"></script>
+
+    <!-- Main CSS file -->
+    <link rel="stylesheet" href="css/style.css" >
+  </head>
+  <body>
+    <!-- https://codepen.io/rafaelcastrocouto/pen/LFAes -->
+    <page size="A4">
+      <textarea id="document"></textarea>
+    </page>
+    
+    <script>
+      // Websocket code adapted from github.com/gorilla/websocket/examples/chat
+      var conn;
+      var msg;
+      var doc;
+      window.onload = function () {
+        msg = document.getElementById("document").value;
+        doc = document.getElementById("document");
+
+        if (window["WebSocket"]) {
+            conn = new WebSocket("ws://{{$}}/ws");
+            conn.onclose = function (evt) {
+                window.alert("Connection closed.");
+            };
+            conn.onmessage = function (evt) {
+              var doScroll = doc.scrollTop === doc.scrollHeight - doc.clientHeight;
+              if (doScroll) {
+                  doc.scrollTop = doc.scrollHeight - doc.clientHeight;
+              }
+            }
+        } else {
+            window.alert("Your browser does not support WebSockets.");
+        }
+      };
+
+      // Timer adapted from: http://stackoverflow.com/questions/4220126/run-javascript-function-when-user-finishes-typing-instead-of-on-key-up
+      var userInputTimer;
+
+      $("#document")
+        .on('input',function(e){
+          // From: https://medium.freecodecamp.com/how-to-reverse-a-string-in-javascript-in-3-different-ways-75e4763c68cb#.vdkzw58fq
+          // $("#output").val($("#userinput").val().split("").reverse().join(""))
+
+          clearTimeout(userInputTimer);
+          userInputTimer = setTimeout(function() {
+            if (!conn) {
+                return false;
+            }
+            if (!msg.value) {
+                return false;
+            }
+            conn.send(msg);
+            return false;
+            console.log("keydown in doc");
+          }, 300);
+
+        });
+    </script>
+  </body>
+</html>
