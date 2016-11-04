@@ -29,6 +29,10 @@ func serveHome(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+
+	styleHandler := http.FileServer(http.Dir("templates/css"))
+    http.Handle("/css/", http.StripPrefix("/css/", styleHandler))
+
 	flag.Parse()
 	hub := newHub()
 	// start hub in new thread
