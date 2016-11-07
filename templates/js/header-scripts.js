@@ -6,10 +6,10 @@ tinymce.init({
   height: 850,
   width: 810,
   browser_spellcheck: true,
-  toolbar: 'save undo redo styleselect bold italic alignleft aligncenter alignright bullist numlist outdent indent code forecolor backcolor fontsizeselect',
+  toolbar: 'save undo redo styleselect bold italic alignleft aligncenter pagebreak alignright bullist numlist outdent indent code forecolor backcolor fontsizeselect',
   fontsize_formats: '8pt 10pt 12pt 14pt 18pt 24pt 36pt 46pt 56pt',
   themes: "inlite",
-  plugins: "save code fullpage textcolor",
+  plugins: "save code fullpage textcolor pagebreak",
   save_enablewhendirty: true,
 
   save_onsavecallback: function () {
