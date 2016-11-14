@@ -12,7 +12,7 @@ import (
 )
 
 var addr = flag.String("addr", ":8080", "http service address")
-var homeTemplate = template.Must(template.ParseFiles("templates/index.html"))
+var homeTemplate = template.Must(template.ParseFiles("templates/editor.html"))
 
 func serveHome(w http.ResponseWriter, r *http.Request) {
 	log.Println(r.URL)
@@ -32,6 +32,12 @@ func main() {
 
 	styleHandler := http.FileServer(http.Dir("templates/css"))
     http.Handle("/css/", http.StripPrefix("/css/", styleHandler))
+
+	js := http.FileServer(http.Dir("templates/js"))
+    http.Handle("/js/", http.StripPrefix("/js/", js))
+
+	img := http.FileServer(http.Dir("templates/images"))
+    http.Handle("/images/", http.StripPrefix("/images/", img))
 
 	flag.Parse()
 	hub := newHub()
