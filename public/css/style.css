@@ -11,6 +11,19 @@ page {
   box-shadow: 0 0 0.5cm rgba(0,0,0,0.5);
 }
 
+#generator_btn{
+  background-color: white;
+    color: black;
+    border: 2px solid #4CAF50; /* Green */
+  -webkit-transition-duration: 0.4s; /* Safari */
+    transition-duration: 0.4s;
+}
+
+#generator_btn:hover{
+  background-color: #4CAF50; /* Green */
+    color: white;
+}
+
 page[size="A4"] {  
   width: 21cm;
   height: 29.7cm; 

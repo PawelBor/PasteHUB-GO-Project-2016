@@ -20,11 +20,73 @@
   </head>
   <body>
     <!-- https://codepen.io/rafaelcastrocouto/pen/LFAes -->
+    <span id="inner_html">
+      <button id="generator_btn">GENERATE</button>
+    </span>
+    <!--
     <page size="A4">
       <textarea id="document"></textarea>
     </page>
+    -->
     
     <script>
+    var chars = "abcdefghijklmnopqrstuvwxyz1234567890";
+    window.onload = function () {
+      var current_url = window.location.href;
+
+      if(current_url != "http://localhost:8080/")
+      {
+        var uri = window.location.pathname;
+        var dir = loc.substring(0, loc.lastIndexOf('/'));
+
+        var uri = "/" + dir;
+        // Load document from db
+        $.ajax({
+          type: "GET",
+          url: uri,
+          data: {
+            uri : uri
+          },
+          success: function(response){
+            console.log("Success")
+          },
+          error: function(response){
+            console.log("GET failed");
+          }
+        });
+      }
+    }
+
+    $("#generator_btn").click(function(e) {
+      var uri = generate_url();
+      $.ajax({
+          type: "POST",
+          url: uri,
+          data: {
+            uri : uri
+          },
+          success: function(response){
+            console.log("success");
+          },
+          error: function(response){
+            console.log("POST failed");
+          }
+        });
+    });
+  
+    function generate_url()
+    {
+      var uri = "/";
+
+      for (var i = 0; i<6; i++){
+        var rand = Math.floor((Math.random() * 35) + 0);
+        uri += chars.charAt(rand);
+      }
+
+      return uri;
+    }
+
+
       // Websocket code adapted from github.com/gorilla/websocket/examples/chat
       var conn;
       var msg;
