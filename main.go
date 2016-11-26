@@ -7,6 +7,7 @@ package main
 import (
 	"flag"
 	"log"
+	"fmt"
 	"net/http"
 	"text/template"
 	"math/rand"
@@ -19,12 +20,11 @@ var addr = flag.String("addr", ":8080", "http service address")
 var homeTemplate = template.Must(template.ParseFiles("public/index.html"))
 
 type Document struct{
-	uri string
-	text string
+	Uri string
+	Text string
 }
 
 func serveHome(w http.ResponseWriter, r *http.Request) {
-	log.Println(r.URL)
 	if r.URL.Path != "/" {
 		http.Error(w, "Not found", 404)
 		return
@@ -49,9 +49,13 @@ func generateUri() string{
 }
 
 func checkMongoForUri(uri string) bool{
-	session, err := mgo.Dial("127.0.0.1")
+
+	
+	session, err := mgo.Dial("127.0.0.1:27017")
 	if err != nil {
+		fmt.Println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 		panic(err)
+		
 	}
 
 	defer session.Close()
@@ -59,33 +63,45 @@ func checkMongoForUri(uri string) bool{
 
 	c := session.DB("doceditor").C("documents")
 
-	/*index := mgo.Index{
-		Key: []string{"uri"},
-		Unique: true,
-		DropDups: true,
+	// Index
+	index := mgo.Index{
+		Key:        []string{"Uri"},
+		Unique:     true,
+		DropDups:   true,
 		Background: true,
-		Sparse: true,
-	}*/
+		Sparse:     true,
+	}
 
-	var results []Document
-
-	err = c.Find(bson.M{}).All(&results)
-
+	err = c.EnsureIndex(index)
 	if err != nil {
+		fmt.Println("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
 		panic(err)
+		
 	}
+	
+	//var results []Document
+	results := Document{}
 
-	for i := range results {
-		if (uri == results[i].uri){
-			return true
-		}
+	//err = c.Find(bson.M{}).All(&results)
+
+	//FAIL HERE
+	err = c.Find(bson.M{"Uri": uri}).One(&results)
+	
+	fmt.Println(uri)
+	fmt.Println(results)
+	if err != nil {
+		fmt.Println("YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY")
+		panic(err)
+		
 	}
-
+	
 	return false
 }
 
 func getDocumentData(uri string) string{
-	session, err := mgo.Dial("127.0.0.1")
+
+	session, err := mgo.Dial("127.0.0.1:27017")
+
 	if err != nil {
 		panic(err)
 	}
@@ -95,21 +111,32 @@ func getDocumentData(uri string) string{
 
 	c := session.DB("doceditor").C("documents")
 
-	/*index := mgo.Index{
-		Key: []string{"uri"},
-		Unique: true,
-		DropDups: true,
+	index := mgo.Index{
+		Key:        []string{"Uri"},
+		Unique:     true,
+		DropDups:   true,
 		Background: true,
-		Sparse: true,
-	}*/
+		Sparse:     true,
+	}
 
-	result := Document{}
-	err = c.Find(bson.M{"uri": uri}).One(&result)
+	err = c.EnsureIndex(index)
+
+	results := Document{}
+	//var results []Document
+
+	//err = c.Find(bson.M{}).All(&results)
+	err = c.Find(bson.M{"Uri": uri}).One(&results)
+	
+	
+	fmt.Println(results)
+
 	if err != nil {
 		panic(err)
 	}
 
-	text := result.text
+	var text string
+
+	text = results.Text	
 
 	return text
 }
@@ -155,24 +182,6 @@ func main() {
 		}else {
 			ctx.HTML(404, "notFound")
 		}
-	})
-
-	// Create document
-	m.Post("/:uri", func (ctx *macaron.Context){
-		// Check first if the front-end generated uri exists
-		exists := checkMongoForUri(ctx.Params(":uri"))
-
-		// If exists, keep generating a new id for document
-		for exists{
-			newUri := generateUri()
-			exists = checkMongoForUri(newUri)
-		}
-
-		// Return to user the template for document
-		ctx.Data["Text"] = ""
-		ctx.HTML(200, "document")
-
-		// Do this when user clicks to make a doc
 	})
 
 	m.Run(8080)
