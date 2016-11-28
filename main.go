@@ -186,7 +186,7 @@ func main() {
 		// If exists, keep generating a new id for document
 		if(exists){
 			// Load page from DB
-			createHub(ctx.Params(":uri"))
+			// createHub(ctx.Params(":uri"))
 			ctx.Data["Text"] = getDocumentData(ctx.Params(":uri"))
 			ctx.HTML(200, "document")		
 		}else {
