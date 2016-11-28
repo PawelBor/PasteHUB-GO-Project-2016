@@ -38,40 +38,25 @@
       {
         var uri = window.location.pathname;
         var dir = loc.substring(0, loc.lastIndexOf('/'));
-
-        var uri = "/" + dir;
-        // Load document from db
-        $.ajax({
-          type: "GET",
-          url: uri,
-          data: {
-            uri : uri
-          },
-          success: function(response){
-            console.log("Success")
-          },
-          error: function(response){
-            console.log("GET failed");
-          }
-        });
+        getDocument(dir);
       }
     }
 
     $("#generator_btn").click(function(e) {
       var uri = generate_url();
       $.ajax({
-          type: "POST",
-          url: uri,
-          data: {
-            uri : uri
-          },
-          success: function(response){
-            console.log("success");
-          },
-          error: function(response){
-            console.log("POST failed");
-          }
-        });
+        type: "POST",
+        url: uri,
+        data: {
+          uri : uri
+        },
+        success: function(response){
+          getDocument(response);
+        },
+        error: function(response){
+          console.log("POST failed");
+        }
+      });
     });
   
     function generate_url()
@@ -86,54 +71,24 @@
       return uri;
     }
 
-
-      // Websocket code adapted from github.com/gorilla/websocket/examples/chat
-      var conn;
-      var msg;
-      var doc;
-      window.onload = function () {
-        doc = document.getElementById("document");
-
-        if (window["WebSocket"]) {
-            conn = new WebSocket("ws://{{$}}/ws");
-            conn.onclose = function (evt) {
-                window.alert("Connection closed.");
-            };
-            conn.onmessage = function (evt) {
-              var doScroll = doc.scrollTop === doc.scrollHeight - doc.clientHeight;
-              if (doScroll) {
-                  doc.scrollTop = doc.scrollHeight - doc.clientHeight;
-              }
-              doc.value = evt.data;
-            }
-        } else {
-            window.alert("Your browser does not support WebSockets.");
+    function getDocument(link){
+      var uri = "/" + link;
+      // Load document from db
+      $.ajax({
+        type: "GET",
+        url: uri,
+        data: {
+          uri : uri
+        },
+        success: function(response){
+          console.log("Success")
+          window.location.replace("http://localhost:8080" + uri);
+        },
+        error: function(response){
+          console.log("GET failed");
         }
-      };
-
-      // Timer adapted from: http://stackoverflow.com/questions/4220126/run-javascript-function-when-user-finishes-typing-instead-of-on-key-up
-      var userInputTimer;
-
-      $("#document")
-        .on('input',function(e){
-          // From: https://medium.freecodecamp.com/how-to-reverse-a-string-in-javascript-in-3-different-ways-75e4763c68cb#.vdkzw58fq
-          // $("#output").val($("#userinput").val().split("").reverse().join(""))
-
-          clearTimeout(userInputTimer);
-          userInputTimer = setTimeout(function() {
-            if (!conn) {
-              console.log("No ws connection");
-              return false;
-            }
-            if (!doc.value) {
-              console.log("Message is null");
-              return false;
-            }
-            conn.send(doc.value);
-            return false;
-            console.log("keydown in doc");
-          }, 500);
-        });
+      });
+    }
     </script>
   </body>
 </html>
