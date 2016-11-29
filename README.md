@@ -11,10 +11,10 @@
 #Project Motivation
 
 The reason we decided to take on this project is because there is nothing like it out there.</br>
-Imagine a website, where you can, without downloading any software, write fully fledged document and retrieve it at any time.</br>
+Imagine a website, where you can, without downloading any software, write fully fledged documents and retrieve them at any time.</br>
 Now imagine on that same website you can have an entire team working on a single document simultaneously.</br>
 </br>
-Sounds good right? Well, we decided to make an attempt at making it a reality.
+Sounds good right? Well, we decided to make an attempt at making that a reality.
 
 
 #Project Outline
