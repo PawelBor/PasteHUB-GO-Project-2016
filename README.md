@@ -1,9 +1,5 @@
-# PasteHub
-Year 4 Project - Emerging Technologies
-
-
-# *Emerging Technologies Project 2016 - Year 4*
-## PasteHub
+# *Pastehub - Emerging Technologies Project 2016 - Year 4*
+##The team
 
 
 **Name:** Pawel Borzym, Edvardas Lasauskas, Niks Gurins, Gediminas Saparauskas </br>
