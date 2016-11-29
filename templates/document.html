@@ -1,73 +1,68 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-<title>Document</title>
-    <link rel="stylesheet" type="text/css" media="all"  href="/css/style.css" >
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.0.0/jquery.min.js"></script>
-<script>
-      // adapted from http://stackoverflow.com/questions/10406930/how-to-construct-a-websocket-uri-relative-to-the-page-uri
-        var loc = window.location, new_uri;
-        if (loc.protocol === "https:") {
-            new_uri = "wss:";
-        } else {
-            new_uri = "ws:";
-        }
-        new_uri += "//" + loc.host;
-        new_uri += loc.pathname + "ws";
+	<head>
+		<title>Document</title>
+		<link rel="stylesheet" type="text/css" media="all"  href="/css/style.css" >
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.0.0/jquery.min.js"></script>
+	</head>
+	<body>
+		<script>
+			$(document).ready(function() {
+			  // adapted from http://stackoverflow.com/questions/10406930/how-to-construct-a-websocket-uri-relative-to-the-page-uri
+			  	var loc = window.location, new_uri;
+				if (loc.protocol === "https:") {
+				    new_uri = "wss:";
+				} else {
+				    new_uri = "ws:";
+				}
+				new_uri += "//" + loc.host;
+				new_uri += loc.pathname + "/ws";
 
-        // Websocket code adapted from github.com/gorilla/websocket/examples/chat
-        var conn;
-        var msg;
-        var doc;
-        window.onload = function () {
-            doc = document.getElementById("document");
-            // Checks if browser supports websockets
-            if (window["WebSocket"]) {
-                var uri = window.location.pathname;
-                conn = new WebSocket(new_uri);
-                conn.onclose = function (evt) {
-                    window.alert("Connection closed.");
-                };
-                conn.onmessage = function (evt) {
-                  var doScroll = doc.scrollTop === doc.scrollHeight - doc.clientHeight;
-                  if (doScroll) {
-                      doc.scrollTop = doc.scrollHeight - doc.clientHeight;
-                  }
-                  doc.value = evt.data;
-                }
-            } else {
-                window.alert("Your browser does not support WebSockets.");
-            }
-        };
+				// Websocket code adapted from github.com/gorilla/websocket/examples/chat
+			  	var conn;
+			  	var msg;
+			  	var doc;
+			  	var userInputTimer;
 
-      // Timer adapted from: http://stackoverflow.com/questions/4220126/run-javascript-function-when-user-finishes-typing-instead-of-on-key-up
-      var userInputTimer;
+		  		doc = document.getElementById("document");
+		  		console.log(doc);
+			    // Checks if browser supports websockets
+			    if (window["WebSocket"]) {
+			    	var uri = window.location.pathname;
+			        conn = new WebSocket(new_uri);
+			        console.log(conn);
+			        conn.onclose = function (evt) {
+			            window.alert("Connection closed.");
+			        };
+			        conn.onmessage = function (evt) {
+			        	console.log(evt);
+			        	doc.value = evt.data;	 
+			        }
+			    } else {
+			        window.alert("Your browser does not support WebSockets.");
+			    }
 
-      $("#document")
-        .on('input',function(e){
-          // From: https://medium.freecodecamp.com/how-to-reverse-a-string-in-javascript-in-3-different-ways-75e4763c68cb#.vdkzw58fq
-          // $("#output").val($("#userinput").val().split("").reverse().join(""))
+			  $("#document").on('input', function(evt){
+			  	  	clearTimeout(userInputTimer);
+			      	userInputTimer = setTimeout(function() {
+			        if (!conn) {
+			          console.log("No ws connection");
+			          return false;
+			        }
+			        if (!doc.value) {
+			          console.log("Message is null");
+			          return false;
+			        }
+			        conn.send(doc.value);
+			        console.log("Sending msg over ws");
+			        return false;
+			      }, 500);
+			  });
+			});
+		</script>
 
-          clearTimeout(userInputTimer);
-          userInputTimer = setTimeout(function() {
-            if (!conn) {
-              console.log("No ws connection");
-              return false;
-            }
-            if (!doc.value) {
-              console.log("Message is null");
-              return false;
-            }
-            conn.send(doc.value);
-            return false;
-            console.log("keydown in doc");
-          }, 500);
-      });
-    </script>
-</head>
-<body>
-    <page size="A4">
-      <textarea id="document">{{.Text}}</textarea>
-    </page>
-</body>
+		<page size="A4">
+		  <textarea id="document">{{.Text}}</textarea>
+		</page>
+	</body>
 </html>

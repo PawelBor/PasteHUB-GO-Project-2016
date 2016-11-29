@@ -8,6 +8,7 @@ package main
 // clients.
 type Hub struct {
 	// Registered clients.
+
 	clients map[*Client]bool
 
 	// Inbound messages from the clients.

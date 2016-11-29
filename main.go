@@ -8,8 +8,8 @@ import (
 	"flag"
 	"fmt"
 	"net/http"
-	"text/template"
 	"math/rand"
+	"text/template"
 	"gopkg.in/macaron.v1"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
@@ -48,8 +48,6 @@ func generateUri() string{
 }
 
 func checkMongoForUri(uri string) bool{
-
-	
 	session, err := mgo.Dial("127.0.0.1:27017")
 	if err != nil {
 		fmt.Println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
@@ -149,25 +147,6 @@ func createDocument(uri string){
 	}
 }
 
-func createHub(uri string){
-	flag.Parse()
-	hub := newHub()
-	// start hub in new thread
-	go hub.run()
-	//url := "/" + uri + "/ws"
-	//http.HandleFunc("/" + uri + "/", serveHome)
-	http.HandleFunc("/" + uri + "/ws", func(w http.ResponseWriter, r *http.Request) {
-		serveWs(hub, w, r)
-	})
-
-	err := http.ListenAndServe(*addr, nil)
-
-	if err != nil {
-		fmt.Println(err)
-		//log.Fatal("ListenAndServe: ", err)
-	}
-}
-
 func main() {
 	styleHandler := http.FileServer(http.Dir("public/css"))
     http.Handle("/css/", http.StripPrefix("/css/", styleHandler))
@@ -181,6 +160,8 @@ func main() {
 	m := macaron.Classic()
 	m.Use(macaron.Renderer())
 
+	flag.Parse()
+
 	// Read existing document
 	m.Get("/:uri", func (ctx *macaron.Context){
 		// Check first if the front-end generated uri exists
@@ -189,9 +170,8 @@ func main() {
 		// If exists, keep generating a new id for document
 		if(exists){
 			// Load page from DB
-			createHub(ctx.Params(":uri"))
 			ctx.Data["Text"] = getDocumentData(ctx.Params(":uri"))
-			ctx.HTML(200, "document")		
+			ctx.HTML(200, "document")
 		}else {
 			ctx.HTML(404, "notFound")
 		}
@@ -218,6 +198,15 @@ func main() {
 			ctx.Data["uri"] = ctx.Params(":uri")		
 			ctx.HTML(200, "uri")
 		}
+	})
+
+	m.Get("/:uri/ws", func(w http.ResponseWriter, r *http.Request){
+		// start hub in new thread
+		// DOESN'T WORK :(
+		hub := newHub()
+		go hub.run()
+
+		serveWs(hub, w, r)
 	})
 
 	m.Run(80)
