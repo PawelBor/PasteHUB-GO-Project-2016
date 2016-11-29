@@ -6,7 +6,6 @@ package main
 
 import (
 	"flag"
-	"log"
 	"fmt"
 	"net/http"
 	"text/template"
@@ -16,8 +15,8 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-var addr = flag.String("addr", ":8080", "http service address")
-var homeTemplate = template.Must(template.ParseFiles("templates/document.tmpl"))
+var addr = flag.String("addr", ":80", "http service address")
+var homeTemplate = template.Must(template.ParseFiles("templates/document.html"))
 
 type Document struct{
 	Uri string
@@ -155,13 +154,17 @@ func createHub(uri string){
 	hub := newHub()
 	// start hub in new thread
 	go hub.run()
-	http.HandleFunc("/" + uri + "/", serveHome)
+	//url := "/" + uri + "/ws"
+	//http.HandleFunc("/" + uri + "/", serveHome)
 	http.HandleFunc("/" + uri + "/ws", func(w http.ResponseWriter, r *http.Request) {
 		serveWs(hub, w, r)
 	})
+
 	err := http.ListenAndServe(*addr, nil)
+
 	if err != nil {
-		log.Fatal("ListenAndServe: ", err)
+		fmt.Println(err)
+		//log.Fatal("ListenAndServe: ", err)
 	}
 }
 
@@ -186,7 +189,7 @@ func main() {
 		// If exists, keep generating a new id for document
 		if(exists){
 			// Load page from DB
-			// createHub(ctx.Params(":uri"))
+			createHub(ctx.Params(":uri"))
 			ctx.Data["Text"] = getDocumentData(ctx.Params(":uri"))
 			ctx.HTML(200, "document")		
 		}else {
@@ -216,5 +219,6 @@ func main() {
 			ctx.HTML(200, "uri")
 		}
 	})
-	m.Run(8080)
+
+	m.Run(80)
 }
