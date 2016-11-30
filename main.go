@@ -6,42 +6,31 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"net/http"
 	"math/rand"
-	"text/template"
 	"gopkg.in/macaron.v1"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
 
 var addr = flag.String("addr", ":80", "http service address")
-var homeTemplate = template.Must(template.ParseFiles("templates/document.html"))
+// Map of hubs (uri:* Hub)
 var hubs = make(map[string]*Hub)
 
+// Structure for the Mongo document
 type Document struct{
 	Uri string
 	Text string
 }
 
-func serveHome(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/" {
-		http.Error(w, "Not found", 404)
-		return
-	}
-	if r.Method != "GET" {
-		http.Error(w, "Method not allowed", 405)
-		return
-	}
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	homeTemplate.Execute(w, r.Host)
-}
-
+// Function to generate a random 6 char long uri
 func generateUri() string{
 	chars := "abcdefghijklmnopqrstuvwxyz1234567890"
 	uri := ""
 	for i := 0; i < 6; i++{
+		// Generate a number between 0 and 36
 		random := rand.Intn(36)
+		// Pick out a character at index "random" from chars
 		uri += string(chars[random])
 	}
 
@@ -50,18 +39,13 @@ func generateUri() string{
 
 func checkMongoForUri(uri string) bool{
 	session, err := mgo.Dial("127.0.0.1:27017")
-	if err != nil {
-		fmt.Println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-		panic(err)
-		
-	}
 
 	defer session.Close()
 	session.SetMode(mgo.Monotonic, true)
 
 	c := session.DB("doceditor").C("documents")
 
-	// Index
+	// Index is an options structure for return from db
 	index := mgo.Index{
 		Key:        []string{"Uri"},
 		Unique:     true,
@@ -72,19 +56,15 @@ func checkMongoForUri(uri string) bool{
 
 	err = c.EnsureIndex(index)
 	if err != nil {
-		fmt.Println("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
 		panic(err)
 		
 	}
-	
-	//var results []Document
+
 	result := Document{}
 
-	//err = c.Find(bson.M{}).All(&results)
-
-	//FAIL HERE
 	err = c.Find(bson.M{"uri": uri}).One(&result)
 	
+	// If there is any results for the uri, return true, else false
 	if result.Uri != ""{
 		return true
 	}
@@ -93,20 +73,17 @@ func checkMongoForUri(uri string) bool{
 }
 
 func getDocumentData(uri string) string{
-
+	// Connect to mongo
 	session, err := mgo.Dial("127.0.0.1:27017")
-	if err != nil {
-		fmt.Println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-		panic(err)
-		
-	}
 
+	// Keep connection from closing until end of method
 	defer session.Close()
 	session.SetMode(mgo.Monotonic, true)
 
+	// Get a cursor to the "documents" collection in db "doceditor"
 	c := session.DB("doceditor").C("documents")
 
-	// Index
+	// Index is an options structure for return from db
 	index := mgo.Index{
 		Key:        []string{"Uri"},
 		Unique:     true,
@@ -115,34 +92,41 @@ func getDocumentData(uri string) string{
 		Sparse:     true,
 	}
 
+	// Ensures the options are being used on the query
 	err = c.EnsureIndex(index)
 	if err != nil {
-		fmt.Println("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
 		panic(err)
 		
 	}
 	
-	//var results []Document
+	// Make a variable to store our results
 	result := Document{}
 
-	//err = c.Find(bson.M{}).All(&results)
-
-	//FAIL HERE
+	// Launch query on MongoDB and put stuff in result
 	err = c.Find(bson.M{"uri": uri}).One(&result)
+	if err != nil {
+		panic(err)
+		
+	}
 	
+	// Return the text saved in DB for the specific uri
 	return result.Text
 }
 
 func createDocument(uri string){
+	// Connect to mongo
 	session, err := mgo.Dial("127.0.0.1:27017")
 
+	// Keep connection from closing until end of method
 	defer session.Close()
 	session.SetMode(mgo.Monotonic, true)
 
+	// Get a cursor to the "documents" collection in db "doceditor"
 	c := session.DB("doceditor").C("documents")
 
+	// Insert a new Document struct into the DB with the desired uri
 	err = c.Insert(&Document{Uri: uri, Text: ""})
-
+	// Panic if there is an error in inserting
 	if err != nil {
 		panic(err)
 	}
@@ -156,7 +140,9 @@ func updateText(uri string, text string){
 
 	c := session.DB("doceditor").C("documents")
 
+	// Object will be the handle on our db object
 	object := bson.M{"uri": uri}
+	// Update 
 	update := bson.M{"$set": bson.M{"text": text}}
 
 	err = c.Update(object, update)
@@ -167,26 +153,19 @@ func updateText(uri string, text string){
 }
 
 func main() {
-	styleHandler := http.FileServer(http.Dir("public/css"))
-    http.Handle("/css/", http.StripPrefix("/css/", styleHandler))
-
-	js := http.FileServer(http.Dir("public/js"))
-    http.Handle("/js/", http.StripPrefix("/js/", js))
-
-	img := http.FileServer(http.Dir("public/images"))
-    http.Handle("/images/", http.StripPrefix("/images/", img))
-
 	m := macaron.Classic()
 	m.Use(macaron.Renderer())
 
 	flag.Parse()
 
+	// Put used to replace the document text in the DB
 	m.Put("/:uri", func (ctx *macaron.Context, r *http.Request){
 		// Get text value from HTTP header
 		text := r.FormValue("text")
 		updateText(ctx.Params(":uri"), text)
 	})
-	// Read existing document
+
+	// Get used to read existing document and load template
 	m.Get("/:uri", func (ctx *macaron.Context){
 		// Check first if the front-end generated uri exists
 		exists := checkMongoForUri(ctx.Params(":uri"))
@@ -201,14 +180,16 @@ func main() {
 		}
 	})
 
+	// Post used to create a new document and put it into the DB
 	m.Post("/:uri", func (ctx *macaron.Context){
 		// Check first if the front-end generated uri exists
 		exists := checkMongoForUri(ctx.Params(":uri"))
 
 		if exists{
 			newUri := generateUri()
+			// While the uri is already in the db
 			for exists{
-				// If exists, keep generating a new id for document
+				// generate a new id for document and check if exists
 				exists = checkMongoForUri(newUri)
 				newUri = generateUri()
 			}
@@ -224,21 +205,25 @@ func main() {
 		}
 	})
 
+	// Get/ws used to serve the websocket for each client and either start or check a hub
 	m.Get("/:uri/ws", func(ctx *macaron.Context, w http.ResponseWriter, r *http.Request){
-		// start hub in new thread
-		// DOESN'T WORK :(
+
+		// Check if hub already in map
 		i := hubs[ctx.Params(":uri")]
 		if i != nil{
+			// if yes, servews to that hub
 			serveWs(i, w, r)
 		}else{
+			// else make a new hub, put it in the map and start the goroutine
 			hub := newHub()
 			hubs[ctx.Params(":uri")] = hub
 			go hub.run()
 
 			serveWs(hub, w, r)
-		}		
+		}
 	})
 
+	// Start running the server on port :80
 	m.Run(80)
 }
 

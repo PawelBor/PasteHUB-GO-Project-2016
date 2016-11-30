@@ -34,14 +34,17 @@
     window.onload = function () {
       var current_url = window.location.href;
 
+      // Check if we're not on index.html
       if(current_url != "http://localhost:8080/")
       {
+        // If not, get the full pathname and try get the document they have, else 404
         var uri = window.location.pathname;
         var dir = loc.substring(0, loc.lastIndexOf('/'));
         getDocument(dir);
       }
     }
 
+    // Create a new document when generate doc is clicked
     $("#generator_btn").click(function(e) {
       var uri = generate_url();
       $.ajax({
@@ -59,8 +62,10 @@
       });
     });
   
+    // Generate uri to send up to server
     function generate_url()
     {
+      // same logic as on GO server
       var uri = "/";
 
       for (var i = 0; i<6; i++){
@@ -71,6 +76,7 @@
       return uri;
     }
 
+    // Function to load the document template specified by uri
     function getDocument(link){
       var uri = "/" + link;
       // Load document from db

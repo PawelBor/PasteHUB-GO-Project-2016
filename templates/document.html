@@ -30,6 +30,7 @@
 			    // Checks if browser supports websockets
 			    if (window["WebSocket"]) {
 			    	var uri = window.location.pathname;
+			    	// Upgrade connection for current uri to a websocket
 			        conn = new WebSocket(new_uri);
 			        console.log(conn);
 			        conn.onclose = function (evt) {
@@ -44,6 +45,7 @@
 			    }
 
 			  var uri = window.location.pathname;
+			  // An event on change of document
 			  $("#document").on('input', function(evt){
 			  	  	clearTimeout(userInputTimer);
 			  	  	clearTimeout(saveToDbTimer);
@@ -81,7 +83,7 @@
 					          console.log("PUT failed");
 					        }
 					   	});
-			      	}, 1000);			  
+			      	}, 5000);			  
 			   });
 			});
 		</script>
