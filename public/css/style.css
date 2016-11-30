@@ -33,6 +33,7 @@ textarea {
   resize: none;
   outline-width: 0;
   border-width: 0;
+  white-space: normal;
 }
 
 #document {

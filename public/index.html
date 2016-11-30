@@ -23,6 +23,10 @@
     <span id="inner_html">
       <button id="generator_btn">GENERATE</button>
     </span>
+    <div>
+      <input type="checkbox" id="private" onclick="showTextbox()" />Private?
+      <input type="text" id="password" placeholder="Password">
+    </div>
     <!--
     <page size="A4">
       <textarea id="document"></textarea>
@@ -32,6 +36,8 @@
     <script>
     var chars = "abcdefghijklmnopqrstuvwxyz1234567890";
     window.onload = function () {
+
+      document.getElementById("password").style.visibility = "hidden";
       var current_url = window.location.href;
 
       // Check if we're not on index.html
@@ -46,12 +52,14 @@
 
     // Create a new document when generate doc is clicked
     $("#generator_btn").click(function(e) {
+      var password = $("#password").val();
       var uri = generate_url();
       $.ajax({
         type: "POST",
         url: uri,
         data: {
-          uri : uri
+          uri : uri,
+          password : password
         },
         success: function(response){
           getDocument(response);
@@ -95,6 +103,16 @@
         }
       });
     }
+
+    function showTextbox(){
+      if (document.getElementById("password").style.visibility === "visible"){
+         document.getElementById("password").style.visibility = "hidden";
+      }else {
+        document.getElementById("password").style.visibility = "visible";
+      }
+      
+    }
+
     </script>
   </body>
 </html>

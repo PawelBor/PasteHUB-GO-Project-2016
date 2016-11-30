@@ -13,7 +13,7 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-var addr = flag.String("addr", ":80", "http service address")
+var addr = flag.String("addr", ":8080", "http service address")
 // Map of hubs (uri:* Hub)
 var hubs = make(map[string]*Hub)
 
@@ -21,6 +21,7 @@ var hubs = make(map[string]*Hub)
 type Document struct{
 	Uri string
 	Text string
+	Password string
 }
 
 // Function to generate a random 6 char long uri
@@ -72,7 +73,7 @@ func checkMongoForUri(uri string) bool{
 	return false
 }
 
-func getDocumentData(uri string) string{
+func getDocumentData(uri string) (string,string){
 	// Connect to mongo
 	session, err := mgo.Dial("127.0.0.1:27017")
 
@@ -108,12 +109,12 @@ func getDocumentData(uri string) string{
 		panic(err)
 		
 	}
-	
+
 	// Return the text saved in DB for the specific uri
-	return result.Text
+	return result.Text, result.Password
 }
 
-func createDocument(uri string){
+func createDocument(uri string, password string){
 	// Connect to mongo
 	session, err := mgo.Dial("127.0.0.1:27017")
 
@@ -125,7 +126,7 @@ func createDocument(uri string){
 	c := session.DB("doceditor").C("documents")
 
 	// Insert a new Document struct into the DB with the desired uri
-	err = c.Insert(&Document{Uri: uri, Text: ""})
+	err = c.Insert(&Document{Uri: uri, Text: "", Password: password})
 	// Panic if there is an error in inserting
 	if err != nil {
 		panic(err)
@@ -172,8 +173,10 @@ func main() {
 
 		// If exists, keep generating a new id for document
 		if(exists){
+			text, password := getDocumentData(ctx.Params(":uri"))
 			// Load page from DB
-			ctx.Data["Text"] = getDocumentData(ctx.Params(":uri"))
+			ctx.Data["Text"] = text
+			ctx.Data["Password"] = password
 			ctx.HTML(200, "document")
 		}else {
 			ctx.HTML(404, "notFound")
@@ -181,9 +184,10 @@ func main() {
 	})
 
 	// Post used to create a new document and put it into the DB
-	m.Post("/:uri", func (ctx *macaron.Context){
+	m.Post("/:uri", func (ctx *macaron.Context, r *http.Request){
 		// Check first if the front-end generated uri exists
 		exists := checkMongoForUri(ctx.Params(":uri"))
+		password := r.FormValue("password")
 
 		if exists{
 			newUri := generateUri()
@@ -194,12 +198,12 @@ func main() {
 				newUri = generateUri()
 			}
 			// Save it toDB
-			createDocument(newUri)
+			createDocument(newUri, password)
 			ctx.Data["uri"] = newUri		
 			ctx.HTML(200, "uri")
 		} else {
 			// Save it toDB
-			createDocument(ctx.Params(":uri"))
+			createDocument(ctx.Params(":uri"), password)
 			ctx.Data["uri"] = ctx.Params(":uri")		
 			ctx.HTML(200, "uri")
 		}
@@ -224,6 +228,6 @@ func main() {
 	})
 
 	// Start running the server on port :80
-	m.Run(80)
+	m.Run(8080)
 }
 
