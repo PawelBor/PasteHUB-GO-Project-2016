@@ -4,6 +4,8 @@
 
 package main
 
+import "fmt"
+
 // hub maintains the set of active clients and broadcasts messages to the
 // clients.
 type Hub struct {
@@ -22,6 +24,7 @@ type Hub struct {
 }
 
 func newHub() *Hub {
+	fmt.Println("newHub()")
 	return &Hub{
 		broadcast:  make(chan []byte),
 		register:   make(chan *Client),
@@ -36,15 +39,18 @@ func (h *Hub) run() {
 			// add client to client map
 		case client := <-h.register:
 			h.clients[client] = true
+			fmt.Println("Register client")
 			// unregister client from map
 		case client := <-h.unregister:
 			if _, ok := h.clients[client]; ok {
 				delete(h.clients, client)
 				close(client.send)
 			}
+			fmt.Println("Unregister client")
 			// broadcast message from user
 		case message := <-h.broadcast:
 			// for client inside clients map
+			fmt.Println("Broadcast message")
 			for client := range h.clients {
 				select {
 				case client.send <- message:

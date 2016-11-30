@@ -23,6 +23,7 @@
 			  	var msg;
 			  	var doc;
 			  	var userInputTimer;
+			  	var saveToDbTimer;
 
 		  		doc = document.getElementById("document");
 		  		console.log(doc);
@@ -42,22 +43,46 @@
 			        window.alert("Your browser does not support WebSockets.");
 			    }
 
+			  var uri = window.location.pathname;
 			  $("#document").on('input', function(evt){
 			  	  	clearTimeout(userInputTimer);
+			  	  	clearTimeout(saveToDbTimer);
+			  	  	// Send stuff across websocket *timer*
 			      	userInputTimer = setTimeout(function() {
-			        if (!conn) {
-			          console.log("No ws connection");
-			          return false;
-			        }
-			        if (!doc.value) {
-			          console.log("Message is null");
-			          return false;
-			        }
-			        conn.send(doc.value);
-			        console.log("Sending msg over ws");
-			        return false;
-			      }, 500);
-			  });
+				        if (!conn) {
+				          console.log("No ws connection");
+				          return false;
+				        }
+				        if (!doc.value) {
+				          console.log("Message is null");
+				          return false;
+				        }
+				        conn.send(doc.value);
+				        console.log("Sending msg over ws");
+				        return false;
+			      	}, 500);
+
+			      	// Save text to database *timer*
+			      	saveToDbTimer = setTimeout(function() {
+			        	// Save text to database
+			        	var text = doc.value;
+			        	$.ajax({
+					        type: "PUT",
+					        url: uri,
+					        async: true,
+					        data: {
+					          uri : uri,
+					          text : text
+					        },
+					        success: function(response){
+					          console.log("Saved to db");
+					        },
+					        error: function(response){
+					          console.log("PUT failed");
+					        }
+					   	});
+			      	}, 1000);			  
+			   });
 			});
 		</script>
 

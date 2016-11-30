@@ -17,6 +17,7 @@ import (
 
 var addr = flag.String("addr", ":80", "http service address")
 var homeTemplate = template.Must(template.ParseFiles("templates/document.html"))
+var hubs = make(map[string]*Hub)
 
 type Document struct{
 	Uri string
@@ -147,6 +148,24 @@ func createDocument(uri string){
 	}
 }
 
+func updateText(uri string, text string){
+	session, err := mgo.Dial("127.0.0.1:27017")
+
+	defer session.Close()
+	session.SetMode(mgo.Monotonic, true)
+
+	c := session.DB("doceditor").C("documents")
+
+	object := bson.M{"uri": uri}
+	update := bson.M{"$set": bson.M{"text": text}}
+
+	err = c.Update(object, update)
+
+	if err != nil {
+		panic(err)
+	}
+}
+
 func main() {
 	styleHandler := http.FileServer(http.Dir("public/css"))
     http.Handle("/css/", http.StripPrefix("/css/", styleHandler))
@@ -162,6 +181,11 @@ func main() {
 
 	flag.Parse()
 
+	m.Put("/:uri", func (ctx *macaron.Context, r *http.Request){
+		// Get text value from HTTP header
+		text := r.FormValue("text")
+		updateText(ctx.Params(":uri"), text)
+	})
 	// Read existing document
 	m.Get("/:uri", func (ctx *macaron.Context){
 		// Check first if the front-end generated uri exists
@@ -200,14 +224,21 @@ func main() {
 		}
 	})
 
-	m.Get("/:uri/ws", func(w http.ResponseWriter, r *http.Request){
+	m.Get("/:uri/ws", func(ctx *macaron.Context, w http.ResponseWriter, r *http.Request){
 		// start hub in new thread
 		// DOESN'T WORK :(
-		hub := newHub()
-		go hub.run()
+		i := hubs[ctx.Params(":uri")]
+		if i != nil{
+			serveWs(i, w, r)
+		}else{
+			hub := newHub()
+			hubs[ctx.Params(":uri")] = hub
+			go hub.run()
 
-		serveWs(hub, w, r)
+			serveWs(hub, w, r)
+		}		
 	})
 
 	m.Run(80)
 }
+
