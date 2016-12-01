@@ -39,8 +39,11 @@
 
 		$(document).ready(function() {
 			if(passwordDB === ""){
+
 				document.getElementById("visibility_wrapper").innerHTML
 				='<div class="mce-doc"><textarea id="tiny_content"></textarea></div>'
+
+				initializeEMC();
 
 				tinyMCE.get('tiny_content').setContent("{{.Text}}", {format : 'raw'});
 
@@ -128,17 +131,11 @@
 		    } else {
 		        window.alert("Your browser does not support WebSockets.");
 		    }
-
-			
-			websockets();
-
 			}else{
 				window.alert("Wrong Password");
 				return;
 			}
 		}
-
-
 
 
 		function initializeEMC(){
@@ -148,9 +145,6 @@
 				selector: 'textarea',
 				setup: function(ed) {
 					ed.on('keyup', function(e) {
-					//DOES THIS PART ONLY NEED TO EXACUTE ONCE?
-					//IF SO PLACE IN ANOTHER FUNCTION AND CALL THIS SECTION
-					//ON INITIALIZE
 
 					// adapted from http://stackoverflow.com/questions/10406930/how-to-construct-a-websocket-uri-relative-to-the-page-uri
 				  	
