@@ -57,12 +57,19 @@ Users attempting to connect to a non-existant document will get a 404, Not Found
 ##Running the application for yourself
 Prerequisites to running the app
 * GO installed and a GO workspace made
-* Macaron and Gorilla packages installed ("go get gopkg.in/macaron.v1" and "go get github.com/gorilla/websocket")
+* Macaron and Gorilla packages installed
+```
+go get gopkg.in/macaron.v1     and     go get github.com/gorilla/websocket
+```
 * MongoDB installed and a database called "doceditor" with a collection "documents" inside
 * A browser that supports HTML5, CSS3 and Javascript along with Websockets
 * Make sure port 8080 is open on your system
 
-To run the actual code, download the entire app, extract and use the "go build" command on the extraction directory. Then simply launch the .exe file created and open localhost:8080 in your browser.
+To run the actual code, download the entire app, extract and use the 
+```
+go build
+```
+command on the extraction directory. Then simply launch the *.exe file created and open localhost:8080 in your browser.
 
 
 ##Features of the application
