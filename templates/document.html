@@ -4,128 +4,222 @@
 		<title>Document</title>
 		<link rel="stylesheet" type="text/css" media="all"  href="/css/style.css" >
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.0.0/jquery.min.js"></script>
+		<!-- Bootstrap CSS -->
+    	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.4/css/bootstrap.min.css">
+    	
+    	<!-- jQuery first, then Tether, then Bootstrap JS. -->
+    	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.0.0/jquery.min.js"></script>
+    	<script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.2.0/js/tether.min.js"></script>
+    	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.4/js/bootstrap.min.js"></script>
+
+    	<!-- Tiny MCE - a lightweight texteditor js lib -->
+	    <script src="https://cdn.tinymce.com/4/tinymce.min.js"></script>
+
+	    <!-- FileSaver JS used for saving files to local drive -->
+	    <script src="js/FileSaver.js"></script>
+
+	    <!-- Main CSS file -->
+    	<link rel="stylesheet" type="text/css" media="all" href="css/style.css" >
+
+    	<!--PDF Saver file - Altered from: https://github.com/MrRio/jsPDF -->
+    	<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.2/jspdf.debug.js"></script>
 	</head>
-	<body>
-		<script>
-		</script>
+	<body >
 
-		<div id="visibility_wrapper" >
-			
-		</div>
+		<div id="visibility_wrapper" ></div>
+
 		<script type="text/javascript">
-		
-			//Get the password
-			var passwordDB = {{.Password}};
 
-			$(document).ready(function() {
-				// Block the script until the correct password is entered
-				checkPassword();
-			});
+		//Get the password from Go
+		var passwordDB = {{.Password}};
+		var conn;
+		var uri = window.location.pathname;
+		var userInputTimer;
+		var saveToDbTimer;
 
-				
-				function checkPassword(){
-					if(passwordDB === ""){
-						document.getElementById("visibility_wrapper").innerHTML
-						='<page size="A4"><textarea id="document">{{.Text}}</textarea></page>'
-					}else{
-						document.getElementById("visibility_wrapper").innerHTML
-						= '<input type="text" id="password" placeholder="Password"><button id="password_btn" onClick="waitForCorrectPassword()" >Log In</button>';
+		$(document).ready(function() {
+			if(passwordDB === ""){
+				document.getElementById("visibility_wrapper").innerHTML
+				='<div class="mce-doc"><textarea id="tiny_content"></textarea></div>'
 
-						waitForCorrectPassword();
-					}
-					
+				tinyMCE.get('tiny_content').setContent("{{.Text}}", {format : 'raw'});
+
+				tinyMCE.activeEditor.selection.select(tinyMCE.activeEditor.getBody(), true);
+				tinyMCE.activeEditor.selection.collapse(false);
+
+				var loc = window.location, new_uri;
+				if (loc.protocol === "https:") {
+				    new_uri = "wss:";
+				} else {
+				    new_uri = "ws:";
 				}
+				new_uri += "//" + loc.host;
+				new_uri += loc.pathname + "/ws";
 
-				function waitForCorrectPassword(){
-					//TIMER WHILE LOOP EVERY X SECONDS AWAIT
+				  	
+
+			  	// Checks if browser supports websockets
+			    if (window["WebSocket"]) {
+			    	var uri = window.location.pathname;
+			    	// Upgrade connection for current uri to a websocket
+			        conn = new WebSocket(new_uri);
+			        console.log(conn);
+			        conn.onclose = function (evt) {
+			            window.alert("Connection closed.");
+			        };
+			        conn.onmessage = function (evt) {
+			        	console.log(evt);
+			        	tinyMCE.get('tiny_content').setContent(evt.data, {format : 'raw'});	
+			        	tinyMCE.activeEditor.selection.select(tinyMCE.activeEditor.getBody(), true);
+						tinyMCE.activeEditor.selection.collapse(false); 
+			        }
+			    } else {
+			        window.alert("Your browser does not support WebSockets.");
+			    }
+
+			}else{
+				document.getElementById("visibility_wrapper").innerHTML
+				= '<div class="centered_box" style="width: 500px;height: 220px;margin:0 auto;margin-top:200px;background-color: white;border-radius: 5px;box-shadow: 5px 5px 15px 5px;text-align: center;padding-left:10px;padding-right:15px;padding-top:50px;"><p><b style="font-size:23px;">This document is password protected.</b><br/>Please enter a password to access this document.</p><br/><input type="text" class="form-control" style="width:300px;float:left;" id="password" placeholder="Password"><button class="btn btn-primary" id="password_btn" onClick="waitForCorrectPassword()" style="width:150px;" >Log In</button></div>';
+			}
+
+			
+		});
+		function waitForCorrectPassword(){
+			if (document.getElementById("password").value === passwordDB){
+				document.getElementById("visibility_wrapper").innerHTML
+			='<div class="mce-doc"><textarea id="tiny_content"></textarea></div>'
+
+			initializeEMC();
+
+			var x = "{{.Text}}";
+			console.log(x);
+			tinyMCE.get('tiny_content').setContent(x, {format : 'raw'});
+
+			tinyMCE.activeEditor.selection.select(tinyMCE.activeEditor.getBody(), true);
+			tinyMCE.activeEditor.selection.collapse(false);
 
 
-					//console.log(document.getElementById("password").value);
-					if (document.getElementById("password").value === passwordDB){
-						document.getElementById("visibility_wrapper").innerHTML
-					='<page size="A4"><textarea id="document">{{.Text}}</textarea></page>'
+			var loc = window.location, new_uri;
+			if (loc.protocol === "https:") {
+			    new_uri = "wss:";
+			} else {
+			    new_uri = "ws:";
+			}
+			new_uri += "//" + loc.host;
+			new_uri += loc.pathname + "/ws";
+
+			  	
+
+		  	// Checks if browser supports websockets
+		    if (window["WebSocket"]) {
+		    	var uri = window.location.pathname;
+		    	// Upgrade connection for current uri to a websocket
+		        conn = new WebSocket(new_uri);
+		        console.log(conn);
+		        conn.onclose = function (evt) {
+		            window.alert("Connection closed.");
+		        };
+		        conn.onmessage = function (evt) {
+		        	console.log(evt);
+		        	tinyMCE.get('tiny_content').setContent(evt.data, {format : 'raw'});	
+		        	tinyMCE.activeEditor.selection.select(tinyMCE.activeEditor.getBody(), true);
+					tinyMCE.activeEditor.selection.collapse(false); 
+		        }
+		    } else {
+		        window.alert("Your browser does not support WebSockets.");
+		    }
+
+			
+			websockets();
+
+			}else{
+				window.alert("Wrong Password");
+				return;
+			}
+		}
+
+
+
+
+		function initializeEMC(){
+
+			//Apapted from: https://www.tinymce.com/docs/
+			tinymce.init({
+				selector: 'textarea',
+				setup: function(ed) {
+					ed.on('keyup', function(e) {
+					//DOES THIS PART ONLY NEED TO EXACUTE ONCE?
+					//IF SO PLACE IN ANOTHER FUNCTION AND CALL THIS SECTION
+					//ON INITIALIZE
 
 					// adapted from http://stackoverflow.com/questions/10406930/how-to-construct-a-websocket-uri-relative-to-the-page-uri
-				  	var loc = window.location, new_uri;
-					if (loc.protocol === "https:") {
-					    new_uri = "wss:";
-					} else {
-					    new_uri = "ws:";
-					}
-					new_uri += "//" + loc.host;
-					new_uri += loc.pathname + "/ws";
+				  	
+				    clearTimeout(userInputTimer);
+					clearTimeout(saveToDbTimer);
 
-					// Websocket code adapted from github.com/gorilla/websocket/examples/chat
-				  	var conn;
-				  	var msg;
-				  	var doc;
-				  	var userInputTimer;
-				  	var saveToDbTimer;
-
-			  		doc = document.getElementById("document");
-			  		console.log(doc);
-				    // Checks if browser supports websockets
-				    if (window["WebSocket"]) {
-				    	var uri = window.location.pathname;
-				    	// Upgrade connection for current uri to a websocket
-				        conn = new WebSocket(new_uri);
-				        console.log(conn);
-				        conn.onclose = function (evt) {
-				            window.alert("Connection closed.");
-				        };
-				        conn.onmessage = function (evt) {
-				        	console.log(evt);
-				        	doc.value = evt.data;	 
-				        }
-				    } else {
-				        window.alert("Your browser does not support WebSockets.");
-				    }
-
-				  var uri = window.location.pathname;
-				  // An event on change of document
-				  $("#document").on('input', function(evt){
-				  	  	clearTimeout(userInputTimer);
-				  	  	clearTimeout(saveToDbTimer);
-				  	  	// Send stuff across websocket *timer*
-				      	userInputTimer = setTimeout(function() {
-					        if (!conn) {
-					          console.log("No ws connection");
-					          return false;
-					        }
-					        if (!doc.value) {
-					          console.log("Message is null");
-					          return false;
-					        }
-					        conn.send(doc.value);
-					        console.log("Sending msg over ws");
-					        return false;
-				      	}, 500);
-
-				      	// Save text to database *timer*
-				      	saveToDbTimer = setTimeout(function() {
-				        	// Save text to database
-				        	var text = doc.value;
-				        	$.ajax({
-						        type: "PUT",
-						        url: uri,
-						        async: true,
-						        data: {
-						          uri : uri,
-						          text : text
-						        },
-						        success: function(response){
-						          console.log("Saved to db");
-						        },
-						        error: function(response){
-						          console.log("PUT failed");
-						        }
-						   	});
-				      	}, 5000);			  
-				   });
-						}else{
-							return;
+					userInputTimer = setTimeout(function() {
+						if (!conn) {
+							console.log("No ws connection");
+							return false;
 						}
+						if (!(tinyMCE.get('tiny_content').getContent({format : 'raw'}))) {
+							console.log("Message is null");
+							return false;
+						}
+						conn.send(tinyMCE.get('tiny_content').getContent({format : 'raw'}));
+						return false;
+						console.log("keydown in doc");
+					}, 500);
+
+					// Save text to database *timer*
+			      	saveToDbTimer = setTimeout(function() {
+			        	// Save text to database
+			        	var text = tinyMCE.get('tiny_content').getContent({format : 'raw'});
+			        	$.ajax({
+					        type: "PUT",
+					        url: uri,
+					        async: true,
+					        data: {
+					          uri : uri,
+					          text : text
+					        },
+					        success: function(response){
+					          console.log("Saved to db");
+					          tinyMCE.activeEditor.selection.select(tinyMCE.activeEditor.getBody(), true);
+				              tinyMCE.activeEditor.selection.collapse(false);
+					        },
+					        error: function(response){
+					          console.log("PUT failed");
+					        }
+					   	});
+			      	}, 5000);
+					// Timer adapted from: http://stackoverflow.com/questions/4220126/run-javascript-function-when-user-finishes-typing-instead-of-on-key-up
+
+					});
+					},
+					statusbar: false,
+					height: 850,
+					width: 810,
+					max_width: 720,
+					browser_spellcheck: true,
+					toolbar: 'save undo redo styleselect bold italic alignleft aligncenter alignright bullist numlist outdent indent code forecolor fontsizeselect ',
+					fontsize_formats: '8pt 10pt 12pt 14pt 18pt 24pt 36pt 46pt 56pt',
+					themes: "inlite",
+					plugins: "save code fullpage textcolor  ",
+					save_enablewhendirty: true,
+
+					save_onsavecallback: function () {
+						save_content(); 
 					}
+	      });
+
+			//Adapted from: https://github.com/MrRio/jsPDF
+			function save_content(){
+				var doc = new jsPDF();
+		        doc.fromHTML(tinyMCE.get('tiny_content').getContent({format : 'raw'}));
+		        doc.save('PasteHub.pdf');
+			}
+		}//End InitializeEMC
 		</script>
 	</body>
 </html>

@@ -9,24 +9,47 @@
 
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.4/css/bootstrap.min.css">
-
+    
     <!-- jQuery first, then Tether, then Bootstrap JS. -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.0.0/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.2.0/js/tether.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.4/js/bootstrap.min.js"></script>
 
+    <!-- Tiny MCE - a lightweight texteditor js lib -->
+    <script src="https://cdn.tinymce.com/4/tinymce.min.js"></script>
+
+    <!-- FileSaver JS used for saving files to local drive -->
+    <script src="js/FileSaver.js"></script>
+    
     <!-- Main CSS file -->
     <link rel="stylesheet" type="text/css" media="all"  href="/css/style.css" >
   </head>
   <body>
+  <div class="centered_box" style="
+    width: 500px;
+    height: 220px;
+    margin:0 auto;
+    margin-top:200px;
+    background-color: white;
+    border-radius: 5px;
+    box-shadow: 5px 5px 15px 5px;
+    text-align: center;
+    padding-left:10px;
+    padding-right:15px;"
+  >
+    
+  <br/>
+  <h1>PasteHub</h1><br/>
+    <p>If you don't have a document to access. Create a new one
+    and a new uri will be generated for collaborational access.</p>
+    <input type="checkbox" checked="true" id="private" onclick="showTextbox()" />Private  &nbsp;  &nbsp;
+    <input type="text" id="password" placeholder="Password">
+
     <!-- https://codepen.io/rafaelcastrocouto/pen/LFAes -->
     <span id="inner_html">
-      <button id="generator_btn">GENERATE</button>
+      <button type="button" id="generate" style="width: 500px;margin-left:-10px;margin-top: 50px;" class="btn btn-primary">Create</button>
     </span>
-    <div>
-      <input type="checkbox" id="private" onclick="showTextbox()" />Private?
-      <input type="text" id="password" placeholder="Password">
-    </div>
+  </div>
     <!--
     <page size="A4">
       <textarea id="document"></textarea>
@@ -37,7 +60,7 @@
     var chars = "abcdefghijklmnopqrstuvwxyz1234567890";
     window.onload = function () {
 
-      document.getElementById("password").style.visibility = "hidden";
+      document.getElementById("password").style.visibility = "visible";
       var current_url = window.location.href;
 
       // Check if we're not on index.html
@@ -51,23 +74,31 @@
     }
 
     // Create a new document when generate doc is clicked
-    $("#generator_btn").click(function(e) {
+    $("#generate").click(function(e) {
       var password = $("#password").val();
-      var uri = generate_url();
-      $.ajax({
-        type: "POST",
-        url: uri,
-        data: {
-          uri : uri,
-          password : password
-        },
-        success: function(response){
-          getDocument(response);
-        },
-        error: function(response){
-          console.log("POST failed");
-        }
-      });
+
+      if(password === "" && $("#private").is(":checked") ){
+        window.alert("Please enter a password");
+      }else{
+        var uri = generate_url();
+
+        $.ajax({
+          type: "POST",
+          url: uri,
+          data: {
+            uri : uri,
+            password : password
+          },
+          success: function(response){
+            getDocument(response);
+          },
+          error: function(response){
+            console.log("POST failed");
+          }
+        });
+      }
+
+      
     });
   
     // Generate uri to send up to server
@@ -105,10 +136,10 @@
     }
 
     function showTextbox(){
-      if (document.getElementById("password").style.visibility === "visible"){
-         document.getElementById("password").style.visibility = "hidden";
+      if (document.getElementById("password").style.visibility === "hidden"){
+         document.getElementById("password").style.visibility = "visible";
       }else {
-        document.getElementById("password").style.visibility = "visible";
+        document.getElementById("password").style.visibility = "hidden";
       }
       
     }
