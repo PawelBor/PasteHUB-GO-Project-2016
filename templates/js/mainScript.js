@@ -1,39 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-	<head>
-		<title>Document</title>
-		<link rel="stylesheet" type="text/css" media="all"  href="/css/style.css" >
-		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.0.0/jquery.min.js"></script>
-		<!-- Bootstrap CSS -->
-    	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.4/css/bootstrap.min.css">
-    	
-    	<!-- jQuery first, then Tether, then Bootstrap JS. -->
-    	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.0.0/jquery.min.js"></script>
-
-    	<!-- Tether -->
-    	<script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.2.0/js/tether.min.js"></script>
-    	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.4/js/bootstrap.min.js"></script>
-
-    	<!-- Tiny MCE - a lightweight texteditor js lib -->
-	    <script src="https://cdn.tinymce.com/4/tinymce.min.js"></script>
-
-	    <!-- FileSaver JS used for saving files to local drive -->
-	    <script src="js/FileSaver.js"></script>
-
-	    <!-- Main CSS file -->
-    	<link rel="stylesheet" type="text/css" media="all" href="css/style.css" >
-
-    	<!--PDF Saver file - Altered from: https://github.com/MrRio/jsPDF -->
-    	<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.2/jspdf.debug.js"></script>
-	</head>
-
-	<body >
-
-		<div id="visibility_wrapper" ></div>
-
-		<script type="text/javascript">
-
-		//Get the password from Go
+//Get the password from Go
 		var passwordDB = {{.Password}};
 		var conn;
 		var uri = window.location.pathname;
@@ -229,6 +194,3 @@
 			}
 
 		}// End InitializeMCE
-		</script>
-	</body>
-</html>
