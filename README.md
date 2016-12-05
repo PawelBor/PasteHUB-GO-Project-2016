@@ -29,7 +29,7 @@ Now, when another user joins your private document, they will prompted to enter 
 *Architecture* | *Technology*
 ---------|----------
 Languages| HTML5, CSS3, JavaScript, GO
-Libraries| Bootstrap, jQuery, jsPDF
+Libraries| Bootstrap, jQuery, jsPDF, tinyMCE
 Frameworks| Macaron, Gorilla
 Database| MongoDB
 
