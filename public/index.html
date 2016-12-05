@@ -117,7 +117,7 @@
 
     // Function to load the document template specified by uri
     function getDocument(link){
-      var uri = "/" + link;
+      var uri = link;
       // Load document from db
       $.ajax({
         type: "GET",
@@ -127,7 +127,9 @@
         },
         success: function(response){
           console.log("Success")
-          window.location.replace("http://localhost:8080" + uri);
+          var url = window.location.href;
+          console.log(url);
+          window.location.replace(url + uri);
         },
         error: function(response){
           console.log("GET failed");
